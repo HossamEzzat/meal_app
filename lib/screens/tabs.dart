@@ -32,7 +32,16 @@ class _TabsScreenState extends State<TabsScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        // Enhanced SnackBar appearance
+        content: Text(
+          message,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSecondaryContainer,
+          ),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -70,15 +79,19 @@ class _TabsScreenState extends State<TabsScreen> {
         ),
       );
 
-      setState(() {
-        _selectedFilters = result ?? kInitialFilters;
-      });
+      // Null check in setState is important to prevent filter reset on 'back' button press
+      if (result != null) {
+        setState(() {
+          _selectedFilters = result;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final availableMeals = dummyMeals.where((meal) {
+      // Logic remains the same, but comments can be helpful
       if (_selectedFilters[Filter.glutenFree]! && !meal.isGlutenFree) {
         return false;
       }
@@ -112,11 +125,22 @@ class _TabsScreenState extends State<TabsScreen> {
       appBar: AppBar(
         title: Text(activePageTitle),
       ),
+      // Assuming MainDrawer has been updated to include a DrawerHeader
       drawer: MainDrawer(
         onSelectScreen: _setScreen,
       ),
-      body: activePage,
+      // 1. Use AnimatedSwitcher for smooth tab transitions
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: activePage,
+      ),
       bottomNavigationBar: BottomNavigationBar(
+        // 2. Enhance BottomNavigationBar theme using Theme data
+        // This is often handled at the MaterialApp theme level, but can be
+        // overridden here for specific styling.
+        type: BottomNavigationBarType.fixed, // Use fixed for better appearance with 2-3 items
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         onTap: _selectPage,
         currentIndex: _selectedPageIndex,
         items: const [
